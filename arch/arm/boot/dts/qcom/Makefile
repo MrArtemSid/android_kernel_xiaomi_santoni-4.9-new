@@ -1,4 +1,4 @@
-
+ifneq ($(CONFIG_MACH_XIAOMI),y)
 dtb-$(CONFIG_ARCH_SDXPOORWILLS) += sdxpoorwills-rumi.dtb \
 	sdxpoorwills-cdp.dtb \
 	sdxpoorwills-mtp.dtb \
@@ -52,3 +52,4 @@ else
 dtbs: $(addprefix $(obj)/,$(dtb-y))
 endif
 clean-files := *.dtb
+endif
