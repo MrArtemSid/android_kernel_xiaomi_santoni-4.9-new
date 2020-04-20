@@ -2532,6 +2532,7 @@
 			clock-names = "iface_clk", "core_clk";
 			linux,phandle = <0x6e>;
 			phandle = <0x6e>;
+			qcom,no-aarch64;
 		};
 
 		qcom,smp2p-modem@0xb011008 {
