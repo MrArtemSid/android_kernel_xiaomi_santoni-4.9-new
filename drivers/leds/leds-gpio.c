@@ -50,7 +50,7 @@ struct pm_qos_request infrared_qos_req;
 struct gpio_ir_tx_packet {
 	struct completion done;
 	struct hrtimer    timer;
-	struct gpio_desc *gpiod;
+	unsigned int      gpio_nr;
 	bool              high_active;
 	u32               pulse;
 	u32               space;
@@ -63,13 +63,14 @@ struct gpio_ir_tx_packet {
 
 struct gpio_led_data {
 	struct led_classdev cdev;
-	struct gpio_desc *gpiod;
+	unsigned gpio;
 	struct work_struct work;
 	u8 new_level;
 	u8 can_sleep;
 	u8 active_low;
 	u8 blinking;
-	gpio_blink_set_t platform_gpio_blink_set;
+	int (*platform_gpio_blink_set)(unsigned gpio, int state,
+			unsigned long *delay_on, unsigned long *delay_off);
 };
 
 struct mutex ir_lock;
@@ -85,12 +86,12 @@ static void gpio_led_work(struct work_struct *work)
 		container_of(work, struct gpio_led_data, work);
 
 	if (led_dat->blinking) {
-		led_dat->platform_gpio_blink_set(led_dat->gpiod,
+		led_dat->platform_gpio_blink_set(led_dat->gpio,
 						 led_dat->new_level,
 						 NULL, NULL);
 		led_dat->blinking = 0;
 	} else
-		gpiod_set_value_cansleep(led_dat->gpiod, led_dat->new_level);
+		gpio_set_value_cansleep(led_dat->gpio, led_dat->new_level);
 		 printk("infr has been end");
 }
 
@@ -118,13 +119,13 @@ static void gpio_led_set(struct led_classdev *led_cdev,
 		schedule_work(&led_dat->work);
 	} else {
 		if (led_dat->blinking) {
-			led_dat->platform_gpio_blink_set(led_dat->gpiod, level,
+			led_dat->platform_gpio_blink_set(led_dat->gpio, level,
 							 NULL, NULL);
 			led_dat->blinking = 0;
 		} else
-			ret = gpiod_direction_output(led_dat->gpiod, level);
+			ret = gpio_direction_output(led_dat->gpio, level);
 			if (ret) {
-				printk("infrared unable to set dir for gpio\n");
+				printk("infrared unable to set dir for gpio [%d]\n", led_dat->gpio);
 			}
 
 	}
@@ -137,16 +138,16 @@ static int gpio_blink_set(struct led_classdev *led_cdev,
 		container_of(led_cdev, struct gpio_led_data, cdev);
 
 	led_dat->blinking = 1;
-	return led_dat->platform_gpio_blink_set(led_dat->gpiod, GPIO_LED_BLINK,
+	return led_dat->platform_gpio_blink_set(led_dat->gpio, GPIO_LED_BLINK,
 						delay_on, delay_off);
 }
 
 static void gpio_ir_tx_set(struct gpio_ir_tx_packet *gpkt, bool on)
 {
 	if (gpkt->high_active)
-		gpiod_set_value(gpkt->gpiod, on);
+		gpio_set_value(gpkt->gpio_nr, on);
 	else
-		gpiod_set_value(gpkt->gpiod, !on);
+		gpio_set_value(gpkt->gpio_nr, !on);
 }
 
 #if defined(USE_HRTIMER_SIMULATION)
@@ -391,7 +392,7 @@ static ssize_t transmit_store(struct device *dev,
 	gpkt.pulse = period * DUTY_CLCLE / 100;
 	gpkt.space = period - gpkt.pulse;
 
-	gpkt.gpiod	 = led_dat->gpiod;
+	gpkt.gpio_nr	 = led_dat->gpio;
 	gpkt.high_active = 1;
 	gpkt.buffer 	 = (unsigned int *)&temp_buf[1];
 	gpkt.length 	 = ((int)count/4 - 1);
@@ -401,7 +402,7 @@ static ssize_t transmit_store(struct device *dev,
 	rc = gpio_ir_tx_transmit_with_timer(&gpkt);
 #else
 	if (gpkt.high_active)  {
-		gpiod_direction_output(gpkt.gpiod, 0);
+		gpio_direction_output(gpkt.gpio_nr, 0);
 	}
 	rc = gpio_ir_tx_transmit_with_delay(&gpkt);
 #endif
@@ -417,12 +418,14 @@ static DEVICE_ATTR(transmit, 0664, transmit_show, transmit_store);
 
 static int create_gpio_led(const struct gpio_led *template,
 	struct gpio_led_data *led_dat, struct device *parent,
-	gpio_blink_set_t blink_set)
+	int (*blink_set)(unsigned, int, unsigned long *, unsigned long *))
 {
 	int ret, state;
 #if defined (WT_USE_FAN54015)
 	int chg_status;
 #endif
+
+	led_dat->gpio = -1;
 
 	/* skip leds that aren't available */
 	if (!gpio_is_valid(template->gpio)) {
@@ -436,7 +439,7 @@ static int create_gpio_led(const struct gpio_led *template,
 
 	led_dat->cdev.name = template->name;
 	led_dat->cdev.default_trigger = template->default_trigger;
-	led_dat->gpiod = template->gpiod;
+	led_dat->gpio = template->gpio;
 	led_dat->can_sleep = gpio_cansleep(template->gpio);
 	led_dat->active_low = template->active_low;
 	led_dat->blinking = 0;
@@ -446,7 +449,7 @@ static int create_gpio_led(const struct gpio_led *template,
 	}
 	led_dat->cdev.brightness_set = gpio_led_set;
 	if (template->default_state == LEDS_GPIO_DEFSTATE_KEEP)
-		state = !!gpiod_get_value_cansleep(led_dat->gpiod) ^ led_dat->active_low;
+		state = !!gpio_get_value_cansleep(led_dat->gpio) ^ led_dat->active_low;
 	else
 		state = (template->default_state == LEDS_GPIO_DEFSTATE_ON);
 	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
@@ -457,13 +460,13 @@ static int create_gpio_led(const struct gpio_led *template,
 	chg_status = fan54015_getcharge_stat();
 	if (!strcmp(template->name, "red")) {
 		if ((chg_status & 0x1) != 0x1) {
-			ret = gpiod_direction_output(led_dat->gpiod, led_dat->active_low ^ state);
+			ret = gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
 			if (ret < 0)
 				return ret;
 		}
 	}
 #else
-	ret = gpiod_direction_output(led_dat->gpiod, led_dat->active_low ^ state);
+	ret = gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
 	if (ret < 0)
 		return ret;
 #endif
@@ -483,6 +486,8 @@ static int create_gpio_led(const struct gpio_led *template,
 
 static void delete_gpio_led(struct gpio_led_data *led)
 {
+	if (!gpio_is_valid(led->gpio))
+		return;
 	led_classdev_unregister(&led->cdev);
 	cancel_work_sync(&led->work);
 }
