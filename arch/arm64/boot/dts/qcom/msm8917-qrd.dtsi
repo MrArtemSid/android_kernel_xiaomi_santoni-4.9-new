@@ -11,7 +11,6 @@
  * GNU General Public License for more details.
  */
 #include <dt-bindings/clock/msm-clocks-8952.h>
-#include "msm8917-camera-sensor-qrd.dtsi"
 #include "msm8937-mdss-panels.dtsi"
 
 &blsp1_uart2 {
@@ -61,6 +60,7 @@
 	vdd-supply = <&pm8937_l8>;
 	qcom,vdd-voltage-level = <2900000 2900000>;
 	qcom,vdd-current-level = <200 570000>;
+	qcom,vdd-always-on;
 
 	/* device communication power supply */
 	vdd-io-supply = <&pm8937_l5>;
@@ -136,5 +136,8 @@
 			linux,can-disable;
 			gpio-key,wakeup;
 		};
+	};
+	boardinfo {
+		compatible = "wt:boardinfo";
 	};
 };
