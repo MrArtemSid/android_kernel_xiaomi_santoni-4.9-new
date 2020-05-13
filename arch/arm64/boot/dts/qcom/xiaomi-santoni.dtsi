@@ -310,6 +310,12 @@
 				qcom,qpnp-ibb-init-lcd-voltage = <5500000>;
 			};
 		};
+        
+	};
+    qcom,pmi8950@3 {
+		qcom,haptics@c000 {
+			qcom,actuator-type = <1>;
+		};
 	};
 };
 
