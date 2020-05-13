@@ -554,6 +554,11 @@ config ARM64_64K_PAGES
 
 endchoice
 
+config MACH_XIAOMI_SANTONI
+	bool "Enable Support for XIAOMI Redmi 4X (Santoni)"
+	depends on ARCH_MSM8940
+	default n
+
 config ARCH_MSM8953_SOC_SETTINGS
 	bool "Enable MSM8953 SOC settings"
 	depends on ARCH_MSM8953
