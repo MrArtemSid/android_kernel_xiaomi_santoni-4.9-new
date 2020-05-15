@@ -187,7 +187,6 @@
 			qcom,pmic-revid = <&pmi8950_revid>;
 			qcom,force-aicl-rerun;
 			qcom,aicl-rerun-period-s = <180>;
-			qcom,autoadjust-vfloat;
 			dpdm-supply = <&qusb_phy>;
 
 			qcom,chgr@1000 {
@@ -559,7 +558,7 @@
 						"torch0_trigger";
 				qcom,max-current = <200>;
 				qcom,id = <0>;
-				qcom,current = <120>;
+				qcom,current = <100>;
 			};
 
 			pmi8950_torch1: qcom,torch_1 {
@@ -569,7 +568,17 @@
 						"torch1_trigger";
 				qcom,max-current = <200>;
 				qcom,id = <1>;
-				qcom,current = <120>;
+			q	com,current = <100>;
+			};
+
+			pmi8950_torch2: qcom,torch_2 {
+				label = "torch";
+				qcom,led-name = "flashlight";
+				qcom,default-led-trigger =
+						"torch2_trigger";
+				qcom,max-current = <200>;
+				qcom,id = <1>;
+				qcom,current = <100>;
 			};
 
 			pmi8950_switch: qcom,switch {
@@ -600,10 +609,9 @@
 			qcom,wave-play-rate-us = <5263>;
 			qcom,actuator-type = <0>;
 			qcom,wave-shape = "square";
-			qcom,vmax-mv = <2000>;
+			qcom,vmax-mv = <2700>;
 			qcom,ilim-ma = <800>;
 			qcom,sc-deb-cycles = <8>;
-			qcom,en-brake;
 			qcom,brake-pattern = <0x3 0x3 0x0 0x0>;
 			qcom,wave-samples = <0x3e 0x3e 0x3e 0x3e 0x3e
 							0x3e 0x3e 0x3e>;
