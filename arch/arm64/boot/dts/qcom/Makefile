@@ -337,6 +337,8 @@ endif
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
 dtbo-$(CONFIG_ARCH_MSM8940) += msm8940-mtp-overlay.dtbo
 dtbo-$(CONFIG_ARCH_MSM8940) += msm8940-cdp-overlay.dtbo
+dtbo-$(CONFIG_ARCH_MSM8940) += msm8940-pmi8940-qrd-sku7.dtb 
+dtbo-$(CONFIG_ARCH_MSM8940) += msm8940-pmi8950-qrd-sku7_S88536AA2.dtb
 
 dtbo-$(CONFIG_ARCH_MSM8917) += msm8917-mtp-overlay.dtbo \
 	msm8917-qrd-overlay.dtbo \
@@ -346,7 +348,10 @@ dtbo-$(CONFIG_ARCH_MSM8917) += msm8917-mtp-overlay.dtbo \
 	msm8917-rcm-overlay.dtbo \
 	apq8017-mtp-overlay.dtbo \
 	apq8017-cdp-overlay.dtbo \
-	apq8017-cdp-wcd-rome-overlay.dtbo
+	apq8017-cdp-wcd-rome-overlay.dtbo \
+	msm8917-pmi8937-qrd-sku5.dtb \
+	msm8917-pmi8937-qrd-sku5_S88503.dtb \
+	msm8917-pmi8937-qrd-sku5_S88505.dtb
 
 dtbo-$(CONFIG_ARCH_QM215) +=qm215-qrd-overlay.dtbo \
 	qcm2150-qrd-overlay.dtbo
@@ -633,8 +638,6 @@ dtb-$(CONFIG_ARCH_SDM429) += sdm429-mtp.dtb \
 	sda429-cdp.dtb
 
 endif
-
-dtb-$(CONFIG_MACH_XIAOMI_SANTONI) := santoni-bleed.dtb
 
 always		:= $(dtb-y)
 subdir-y	:= $(dts-dirs)
