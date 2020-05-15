@@ -15,8 +15,7 @@
 /dts-v1/;
 
 #include "../qcom/msm8940.dtsi"
-#include "../qcom/msm-pmi8950.dtsi"
-#include "../qcom/msm8937-qrd.dtsi"
+#include "../qcom/pmi8950.dtsi"
 #include "../qcom/msm8937-mdss-panels.dtsi"
 #include "../qcom/msm8940-pinctrl.dtsi"
 #include "common/msm8937-common.dtsi"
