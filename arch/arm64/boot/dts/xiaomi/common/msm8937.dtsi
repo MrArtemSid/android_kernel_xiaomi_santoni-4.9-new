@@ -36,6 +36,7 @@
 
 &firmware {
 	android {
+        /delete-node/ vbmeta;
 		fstab {
             vendor {
 				dev = "/dev/block/platform/soc/7824900.sdhci/by-name/cust";

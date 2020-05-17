@@ -15,6 +15,7 @@
 /dts-v1/;
 
 #include "../qcom/msm8940.dtsi"
+#include "../qcom/msm8937-qrd.dtsi"
 #include "../qcom/pmi8950.dtsi"
 #include "../qcom/msm8937-mdss-panels.dtsi"
 #include "../qcom/msm8940-pinctrl.dtsi"
@@ -37,6 +38,39 @@
 		#include "santoni/batterydata-qrd-Coslight-4v4-4100mah.dtsi"
 		#include "santoni/batterydata-qrd-Default-4v4-4100mah.dtsi"
 	};
+};
+
+&wsa881x_i2c_f {
+	status = "disabled";
+};
+
+&wsa881x_i2c_45 {
+	status = "disabled";
+};
+
+&wsa881x_analog_vi_gpio {
+	status = "disabled";
+};
+
+&wsa881x_analog_clk_gpio {
+	status = "disabled";
+};
+
+&wsa881x_analog_reset_gpio {
+	status = "disabled";
+};
+
+&int_codec {
+		/delete-property/ asoc-wsa-codec-names;
+		/delete-property/ asoc-wsa-codec-prefixes;
+		/delete-property/ msm-vdd-wsa-switch-supply;
+		/delete-property/ qcom,msm-vdd-wsa-switch-voltage;
+		/delete-property/ qcom,msm-vdd-wsa-switch-current;
+		/delete-property/ qcom,msm-gpios;
+		/delete-property/ qcom,pinctrl-names;
+		/delete-property/ pinctrl-names;
+		/delete-property/ pinctrl-0;
+		/delete-property/ pinctrl-1;
 };
 
 &apps_iommu {
